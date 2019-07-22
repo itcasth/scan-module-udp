@@ -41,12 +41,11 @@ public class ScanReceiverThread extends Thread {
 				//添加到工作线程队列
 				SerialMessage message = new SerialMessage(  );
 				byte[] data = datagramPacket.getData();
-				message = message.decode( data,message );
-				ScanServerManager.CheckSendFinish( message.getReg() );
+			//	message = message.decode( data,message );
+				ScanServerManager.CheckSendFinish( data );
 				message.setSocketAddress( datagramPacket.getSocketAddress() );
-				RemMacroItem item = message.decodeRemMacroItem( data );
-				log.info( "Receive scan model message:{}",message.toString() );
-				ScanWorkThread.push( item );
+				message.decodeByte( data );
+			//	ScanWorkThread.push( item );
 			}catch (Exception e){
 				e.printStackTrace();
 			}

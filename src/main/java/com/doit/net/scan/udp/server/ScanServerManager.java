@@ -93,17 +93,20 @@ public class ScanServerManager {
 
 	/**
 	 * 检查消息是否发送成功
-	 * @param reg
+	 * @param data
 	 */
-	public static void CheckSendFinish(String reg)
+	public static void CheckSendFinish(byte[] data)
 	{
 		if (SendMessageList.size() <= 0)
 		{
 			return;
 		}
+
+		String reg = new String( data );
 		SerialMessage msg = SendMessageList.get( 0 );
 		if (reg.contains(msg.getReg()))
 		{
+			log.info( "检查消息 包含："+msg.getReg() );
 			SendMessageList.remove(0);
 		}
 	}

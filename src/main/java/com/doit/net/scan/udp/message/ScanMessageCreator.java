@@ -57,7 +57,7 @@ public class ScanMessageCreator {
 	 * @param s
 	 */
 	public static void scanByOper(String ip,int port,int s) {
-		send(ip,port, ScanFreqEnum.SCAN_SET_OPERATOR.getMessage()+ s + "\\r\\n", ScanFreqEnum.SCAN_SET_OPERATOR.getBack());
+		send(ip,port, ScanFreqEnum.SCAN_SET_OPERATOR.getMessage()+ s + "\r\n", ScanFreqEnum.SCAN_SET_OPERATOR.getBack());
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class ScanMessageCreator {
 	 */
 	public static void setBand(String ip,int port,int band)
 	{
-		send(ip,port, ScanFreqEnum.SCAN_BAND.getMessage()+band+"\\r\\n", ScanFreqEnum.SCAN_BAND.getBack());
+		send(ip,port, ScanFreqEnum.SCAN_BAND.getMessage()+band+"\r\n", ScanFreqEnum.SCAN_BAND.getBack());
 	}
 
 	/**

@@ -16,6 +16,7 @@ public class RemMacroItem {
 	private String lac;
 	private List<RemNeighbourItem> list;
 
+
 	public String getPlmn() {
 		return plmn;
 	}

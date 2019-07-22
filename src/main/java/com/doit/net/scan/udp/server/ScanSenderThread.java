@@ -1,10 +1,14 @@
 package com.doit.net.scan.udp.server;
 
 import com.doit.net.scan.udp.base.SerialMessage;
+import com.doit.net.scan.udp.constants.ScanFreqConstants;
+import com.doit.net.scan.udp.message.ScanMessageCreator;
 import com.doit.net.scan.udp.server.ScanServerManager;
 import com.doit.net.scan.udp.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.impl.SimpleLogger;
+import sun.security.pkcs11.wrapper.Constants;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -42,7 +46,7 @@ public class ScanSenderThread extends Thread {
 				SerialMessage msg = ScanServerManager.SendMessageList.get( 0 );
 				if (msg.isSend())
 				{
-					if (StringUtils.isNotBlank( msg.getReg() )) {
+					if (StringUtils.isBlank( msg.getReg() )) {
 						ScanServerManager.SendMessageList.remove(0);
 						continue;
 					}
@@ -51,8 +55,8 @@ public class ScanSenderThread extends Thread {
 						msg.setSend( false );
 						continue;
 					}
-					log.info("Serial wait msg:{0}", msg.getMsg());
-					log.info("SendMessageList 长度:{0}", ScanServerManager.SendMessageList.size());
+					log.info("Serial wait msg:{}", msg.getMsg());
+					log.info("SendMessageList 长度:{}", ScanServerManager.SendMessageList.size());
 					msg.waitTimes++;
 					continue;
 				}
@@ -81,7 +85,7 @@ public class ScanSenderThread extends Thread {
 		msg.setSend( true );
 		msg.setWaitTimes( 0 );
 
-		log.info("Send {0} to {1}", msg.getMsg(), msg.getInetSocketAddress());
+		log.info("Send {} to {}", msg.getMsg(), msg.getInetSocketAddress());
 		send(msg);
 	}
 
@@ -92,25 +96,23 @@ public class ScanSenderThread extends Thread {
 	 */
 	private void send(SerialMessage msg) {
 		log.info( "scan udp sender thread started " );
-		while (true){
-			try {
-				SocketAddress socketAddress = msg.getSocketAddress();
-				byte[] bytes =msg.getMsg().getBytes();
-				log.info( "send code:{}",msg.getHead() );
-				DatagramPacket packet = new DatagramPacket( bytes, bytes.length, socketAddress );
-				DatagramSocket socket = getSocket();
-				if(socket==null){
-					log.warn( "Not found scan socket:{}",msg.getInetSocketAddress().getPort() );
-				}
-				socket.send( packet );
-			}catch (Exception e){
-				e.printStackTrace();
+		try {
+			SocketAddress socketAddress = msg.getSocketAddress();
+			byte[] bytes =msg.getMsg().getBytes();
+			log.info( "send msg:{}",msg.getMsg() );
+			DatagramPacket packet = new DatagramPacket( bytes, bytes.length, socketAddress );
+			DatagramSocket socket = getSocket();
+			if(socket==null){
+				log.warn( "Not found scan socket:{}",msg.getInetSocketAddress().getPort() );
 			}
+			socket.send( packet );
+		}catch (Exception e){
+			e.printStackTrace();
 		}
 	}
 
 	public static DatagramSocket getSocket(){
-		return getDatagramSocket();
+		return ScanServerManager.getDatagramSocket();
 	}
 
 	private static int PORT = 9201;
@@ -141,8 +143,12 @@ public class ScanSenderThread extends Thread {
 	}
 
 	public static void main(String[] args) {
+		System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "trace");
+		System.setProperty(SimpleLogger.SHOW_SHORT_LOG_NAME_KEY, "true");
+		System.setProperty(SimpleLogger.LOG_FILE_KEY, "System.out");
 		ScanServerManager.startListener();
-
+		ScanMessageCreator.scanUmtsFreq( ScanFreqConstants.IP,ScanFreqConstants.PORT,0 );
+		//ScanMessageCreator.scanGsmFreq( ScanFreqConstants.IP,ScanFreqConstants.PORT,0 );
 		//IpcellServiceManager.addCallBack( String.valueOf( IpcellConstants.IPCELL_QUERY_ACK ),new BaseHandler() );
 
 		//IpcellMessageCreator.setRedirect3G( IpcellConstants.IP,IpcellConstants.PORT,"10663");
