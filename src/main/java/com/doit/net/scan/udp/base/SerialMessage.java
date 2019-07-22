@@ -132,7 +132,7 @@ public class SerialMessage extends BaseHeader{
 
 
 		//将扫频结果添加到工作线程
-		if(item!=null){
+		if(item!=null && StringUtils.isNotBlank( item.getHead() )){
 			item.setList( list );
 			ScanWorkThread.push( item );
 			System.out.println(item.getList().size());
