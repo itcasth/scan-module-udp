@@ -11,11 +11,28 @@ public class RemMacroItem {
 	private String fcn;
 	private String pci;
 	private String ci;
-	private String rsrp;
 	private String rac;
 	private String lac;
+	private String rscp;
+	private String rxLevl;
+
+	public String getRxLevl() {
+		return rxLevl;
+	}
+
+	public void setRxLevl(String rxLevl) {
+		this.rxLevl = rxLevl;
+	}
+
 	private List<RemNeighbourItem> list;
 
+	public String getRscp() {
+		return rscp;
+	}
+
+	public void setRscp(String rscp) {
+		this.rscp = rscp;
+	}
 
 	public String getPlmn() {
 		return plmn;
@@ -49,13 +66,6 @@ public class RemMacroItem {
 		this.ci = ci;
 	}
 
-	public String getRsrp() {
-		return rsrp;
-	}
-
-	public void setRsrp(String rsrp) {
-		this.rsrp = rsrp;
-	}
 
 	public String getRac() {
 		return rac;

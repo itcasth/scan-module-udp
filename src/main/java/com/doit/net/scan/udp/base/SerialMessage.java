@@ -83,42 +83,88 @@ public class SerialMessage extends BaseHeader{
 	 * 码流解码
 	 * @param data
 	 */
-	public static void  decodeByte(byte[] data){
+	public synchronized static void  decodeByte(byte[] data) {
 		String content = new String( data );
-		log.info("==================接收的数据：{}",content);
-		if(content.startsWith( ScanFreqConstants.PRE_EEMGINFO)){
+		log.info( "==================接收的数据：{}", content );
+		if (content.startsWith( ScanFreqConstants.PRE_EEMGINFO )) {
 			String[] arr = content.split( "\r\n" );
-			for (String str : arr){
-				if(str.startsWith( ScanFreqConstants.POST_EEMGINFOSVC )){
+			for (String str : arr) {
+				if (str.startsWith( ScanFreqConstants.POST_EEMGINFOSVC )) {
 					//GSM当前小区解码
-					pushInfoSvcToWorkThread(str,ScanFreqConstants.POST_EEMGINFOSVC );
-				}else if(str.startsWith( ScanFreqConstants.POST_EEMUMTSSVC )){
+					pushInfoSvcToWorkThread( str, ScanFreqConstants.POST_EEMGINFOSVC );
+					ReportResult( "【======GSM扫频结果上报======】", "【======GSM邻区长度======】" );
+				} else if (str.startsWith( ScanFreqConstants.POST_EEMUMTSSVC )) {
 					//UMTS本小区
-					String[] val = content.replace("+EEMLTESVC:", "").split(",");
-					pushUmtsToWorkThread(val,ScanFreqConstants.POST_EEMUMTSSVC);
+					String[] val = str.replace( "+EEMUMTSSVC:", "" ).split( "," );
+					if (val.length < 10) {
+						continue;
+					}
+					pushUmtsToWorkThread( val, ScanFreqConstants.POST_EEMUMTSSVC );
+					ReportResult( "【======WCDMA扫频结果上报======】", "【======WCDMA邻区长度======】" );
 				}
 			}
-		}else if(content.startsWith( ScanFreqConstants.POST_EEMGINFONC )){
+		} else if (content.startsWith( ScanFreqConstants.POST_EEMGINFONC )) {
 			dataStr = content;
 
-		}else if(content.contains( ScanFreqConstants.POST_EEMGINFONC )){
+		} else if (content.contains( ScanFreqConstants.POST_EEMGINFONC )) {
 			dataStr = dataStr + content;
-			System.out.println("合并后的数据："+dataStr);
+			System.out.println( "合并后的数据：" + dataStr );
 			String[] arr = dataStr.split( "\r\n" );
 			//GSM邻区信息解码
-			for (String str : arr){
-				if(str.startsWith( ScanFreqConstants.POST_EEMGINFONC )){
-					pushInfocToWorkThread(str,ScanFreqConstants.POST_EEMGINFONC );
-				}else if(str.startsWith( ScanFreqConstants.POST_EEMGINBFTM)){
-					pushinBfTmToWorkThread(str,ScanFreqConstants.POST_EEMGINBFTM );
+			for (String str : arr) {
+				if (str.startsWith( ScanFreqConstants.POST_EEMGINFONC )) {
+					pushInfocToWorkThread( str, ScanFreqConstants.POST_EEMGINFONC );
+				} else if (str.startsWith( ScanFreqConstants.POST_EEMGINBFTM )) {
+					pushinBfTmToWorkThread( str, ScanFreqConstants.POST_EEMGINBFTM );
 				}
 			}
+			ReportResult( "【======GSM扫频结果上报======】", "【======GSM邻区长度======】" );
 
-		}else if(content.contains( ScanFreqConstants.POST_EEMUMTSINTRA )){
-			//UMTS邻区
+
+		} else if (content.startsWith( ScanFreqConstants.PRE_EEMUMTSINTER )) {
 			String[] arr = content.split( "\r\n" );
-			for (String str : arr){
-				if(str.startsWith( ScanFreqConstants.POST_EEMUMTSINTRA )){
+			for (String str : arr) {
+				if (str.startsWith( ScanFreqConstants.POST_EEMUMTSINTER )) {
+					//添加umts异网邻区到工作线程
+					System.out.println("添加umts异网邻区到工作线程");
+					pushUmtsInterToWorkThread( str, ScanFreqConstants.POST_EEMUMTSINTER );
+				}
+			}
+			ReportResult( "【======WCDMA扫频结果上报======】", "【======WCDMA邻区长度======】" );
+		} else if (content.contains( ScanFreqConstants.POST_EEMUMTSINTER )) {
+			String[] arr = content.split( "\r\n" );
+			for (String str : arr) {
+				if (str.startsWith( ScanFreqConstants.POST_EEMUMTSINTER )) {
+					//添加umts异网邻区到工作线程
+					System.out.println("添加umts异网邻区到工作线程");
+					pushUmtsInterToWorkThread( str, ScanFreqConstants.POST_EEMUMTSINTER );
+				}
+			}
+			ReportResult( "【======WCDMA扫频结果上报======】", "【======WCDMA邻区长度======】" );
+		}
+
+
+		else if (content.startsWith( ScanFreqConstants.PRE_EEMUMTSINTRA )) {
+			String[] arr = content.split( "\r\n" );
+			for (String str : arr) {
+				if (str.startsWith( ScanFreqConstants.POST_EEMUMTSINTRA )) {
+					//添加umts同网邻区到工作线程
+					String[] val = str.replace("+EEMUMTSINTRA:", "").split(",");
+					if (val.length < 10)
+					{
+						continue;
+					}
+					System.out.println("添加umts同网邻区到工作线程");
+					pushUmtsIntraToWorkThread(val,ScanFreqConstants.POST_EEMUMTSINTRA );
+				}
+			}
+			ReportResult( "【======WCDMA扫频结果上报======】", "【======WCDMA邻区长度======】" );
+		} else if (content.contains( ScanFreqConstants.POST_EEMUMTSINTRA )) {
+			String[] arr = content.split( "\r\n" );
+			for (String str : arr) {
+				if (str.startsWith( ScanFreqConstants.POST_EEMUMTSINTRA )) {
+					//添加umts同网邻区到工作线程
+					System.out.println("添加umts同网邻区到工作线程");
 					String[] val = str.replace("+EEMUMTSINTRA:", "").split(",");
 					if (val.length < 10)
 					{
@@ -127,15 +173,18 @@ public class SerialMessage extends BaseHeader{
 					pushUmtsIntraToWorkThread(val,ScanFreqConstants.POST_EEMUMTSINTRA );
 				}
 			}
-
+			ReportResult( "【======WCDMA扫频结果上报======】", "【======WCDMA邻区长度======】" );
 		}
 
+	}
 
+	public static void ReportResult(String msg,String msg2){
 		//将扫频结果添加到工作线程
 		if(item!=null && StringUtils.isNotBlank( item.getHead() )){
+			System.out.println(msg);
 			item.setList( list );
 			ScanWorkThread.push( item );
-			System.out.println(item.getList().size());
+			System.out.println(msg2+item.getList().size());
 			dataStr = "";
 			list.clear();
 			item = null;
@@ -231,7 +280,10 @@ public class SerialMessage extends BaseHeader{
 		String arfcn = val[8].trim();
 		String psc = val[9].trim();
 		log.info("rxLevel:{},lac:{},ci:{},arfcn:{},psc:{}", rxLevel, lac, ci, arfcn,psc);
-
+		if(item==null){
+			item = new RemMacroItem();
+			item.setHead( ScanFreqConstants.UMTS_SCAN_RESULT );
+		}
 		RemNeighbourItem ritem = new RemNeighbourItem();
 		ritem.setCi( ci );
 		ritem.setPci( psc );
@@ -239,9 +291,7 @@ public class SerialMessage extends BaseHeader{
 		ritem.setLac( lac );
 		ritem.setRxLevel( rxLevel );
 		ritem.setPlmn( plmn );
-		if(!ritem.getPlmn().startsWith( "0" )){
-			list.add( ritem );
-		}
+		list.add( ritem );
 
 	}
 
@@ -251,12 +301,15 @@ public class SerialMessage extends BaseHeader{
 	 * @param l
 	 * @param head
 	 */
-	private void pushUmtsInterToWorkThread(String l, String head) {
+	private static void  pushUmtsInterToWorkThread(String l, String head) {
 		//+EEMUMTSINTER:\ 0,\ -32768,\ 0,\ -115,\ 0,\ 0,\ 65534,\ 0,\ 10713,\ 29\r\n\r\n\+EEMUMTSINTER:\ 1,\ -32768,\ 0,\ -115,\ 0,\ 0,\ 65534,\ 1,\ 10713,\ 327\r\n\r\n\+EEMUMTSINTER:\ 2,\ -32768,\ 0,\ -115,\ 0,\ 0,\ 65534,\ 2,\ 10713,\ 182\r\n\r\n\+EEMUMTSINTER:\ 3,\ -32768,\ 0,\ -115,\ 0,\ 0,\ 65534,\ 3,\ 10713,\ 336\r\n\r\n\+EEMUMTSINTER:\ 4,\ -32768,\ 0,\ -115,\ 0,\ 0,\ 65534,\ 4,\ 10713,\ 230\r\n\r\n\+EEMUMTSINTER:\ 5,\ -32768,\ 0,\ -115,\ 0,\ 0,\ 65534,\ 5,\ 10713,\ 72\r\n\r\n\+EEMUMTSINTER:\ 6,\ -32768,\ 0,\ -115,\ 0,\ 0,\ 65534,\ 6,\ 10713,\ 221\r\n\r\n\+EEMUMTSINTER:\ 7,\ -32768,\ 0,\ -115,\ 0,\ 0,\ 65534,\ 7,\ 10713,\ 378\r\n\r\n\+EEMUMTSINTRA:\ 0,\ -32768,\ -1,\ -115,\ 0,\ 0,\ 65534,\ 1,\ 10663,\ 478\r\n
 		//+EEMUMTSINTER: 0, -32768, 0, -115, 0, 0, 65534, 0, 10713, 29
 		//pccpchRSCP,utraRssi,sRxLev,mcc,mnc,lac,ci,arfcn,cellParameterId
 		//+EEMUMTSINTRA:\ 0,\ -32768,\ -1,\ -115,\ 0,\ 0,\ 65534,\ 1,\ 10663,\ 478\r\n
 		String[] val = l.replace("+EEMUMTSINTER:", "").split(",");
+		if(val.length<10){
+			return;
+		}
 		String rxLevel = val[3].trim();
 		String lac = val[6].trim();
 		String ci = val[7];
@@ -273,20 +326,20 @@ public class SerialMessage extends BaseHeader{
 			psc = psc.trim();
 		}
 		log.info("rxLevel:{},lac:{},ci:{},arfcn:{},psc:{}", rxLevel,lac,ci,arfcn,psc);
-
-		RemMacroItem item = new RemMacroItem();
-		item.setHead( head );
+		if(item==null){
+			item = new RemMacroItem();
+			item.setHead( ScanFreqConstants.UMTS_SCAN_RESULT );
+		}
 		RemNeighbourItem ritem = new RemNeighbourItem();
 		ritem.setCi( ci );
 		ritem.setPci( psc );
 		ritem.setFcn( arfcn );
 		ritem.setLac( lac );
 		ritem.setRxLevel( rxLevel );
-		List<RemNeighbourItem> list = new ArrayList(  );
+
 		list.add( ritem );
-		item.setList( list );
+
 		System.out.println("===pushUmtsInterToWorkThread===");
-		ScanWorkThread.push( item );
 	}
 
 	/**
@@ -360,6 +413,7 @@ public class SerialMessage extends BaseHeader{
 		log.info("EEMGINFONC - rxLevel:{},lac:{},ci:{},arfcn:{},plmn:{}", rx_lev,tac,ci,fcn, mcc + mnc );
 		if(item==null){
 			item =  new RemMacroItem();
+			item.setHead( ScanFreqConstants.GSM_SCAN_RESULT );
 		}
 		if(!ritem.getPlmn().startsWith( "0" )){
 			list.add( ritem );
@@ -396,6 +450,7 @@ public class SerialMessage extends BaseHeader{
 		ritem.setPlmn( mcc+mnc );
 		if(item==null){
 			item = new RemMacroItem();
+			item.setHead( ScanFreqConstants.GSM_SCAN_RESULT );
 		}
 		if(!ritem.getPlmn().startsWith( "0" )){
 			list.add( ritem );
@@ -446,18 +501,21 @@ public class SerialMessage extends BaseHeader{
 		String mnc = "";
 		String lac = "";
 		String psc = "";
+		String rscp = "";
 
-		mcc = Integer.toHexString( Integer.parseInt( val[13].trim() ) );
-		_mnc = Integer.toHexString( Integer.parseInt( val[14].trim() ) );
+		String s = val[12].trim();
+		mcc = Integer.toHexString( Integer.parseInt( s ) );
+		_mnc = Integer.toHexString( Integer.parseInt( val[13].trim() ) );
 		mnc = _mnc.length() == 2 ? _mnc : "0" + _mnc;
-		lac = val[15].trim();
-		psc = val[18].trim();
-		arfcn = val[19].trim();
-		ci = val[16].trim();
-		rac = val[11].trim();
-		rxLevel = val[9].trim();
+		lac = val[14].trim();
+		psc = val[17].trim();
+		arfcn = val[18].trim();
+		ci = val[15].trim();
+		rac = val[10].trim();
+		rxLevel = val[8].trim();
+		rscp = val[4].trim(); //-36
 		log.info("===========Engineering Mode=============");
-		log.info("SVC plmn{},rxLevel{},ci:{},arfcn:{},rac:{},psc:{}", (mcc + mnc),  rxLevel,  ci,  arfcn, rac, psc);
+		log.info("SVC plmn{},rxLevel{},ci:{},arfcn:{},rac:{},psc:{},rscp", (mcc + mnc),  rxLevel,  ci,  arfcn, rac, psc,rscp);
 		item = new RemMacroItem();
 		item.setPlmn( mcc + mnc );
 		item.setPci(psc);
@@ -465,7 +523,8 @@ public class SerialMessage extends BaseHeader{
 		item.setCi( ci );
 		item.setRac( rac );
 		item.setLac( lac );
-		item.setRsrp( rxLevel );
+		item.setRxLevl( rxLevel );
+		item.setRscp( rscp );
 		item.setHead( ScanFreqConstants.UMTS_SCAN_RESULT );
 
 	}
@@ -499,7 +558,6 @@ public class SerialMessage extends BaseHeader{
 		item.setFcn(dlEuarfcn);
 		item.setCi( val[9].trim());
 		item.setLac( tac );
-		item.setRsrp( rsrp );
 		item.setHead( head );
 		ScanWorkThread.push( item );
 		System.out.println("===pushLTEtoWorkThread===");

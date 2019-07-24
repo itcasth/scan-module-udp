@@ -24,6 +24,7 @@ public class ScanSenderThread extends Thread {
 	private final static Logger log = LoggerFactory.getLogger( ScanSenderThread.class);
 
 	private static BlockingQueue<SerialMessage> senderQueue = new LinkedBlockingQueue<SerialMessage>();
+
 	public ScanSenderThread(){
 		setName( "Scan-Sender" );
 	}
@@ -142,11 +143,13 @@ public class ScanSenderThread extends Thread {
 		}
 	}
 
-	public static void main(String[] args) {
+	public static void main(String[] args) throws InterruptedException {
 		System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "trace");
 		System.setProperty(SimpleLogger.SHOW_SHORT_LOG_NAME_KEY, "true");
 		System.setProperty(SimpleLogger.LOG_FILE_KEY, "System.out");
 		ScanServerManager.startListener();
+		ScanMessageCreator.scanGsmFreq( ScanFreqConstants.IP,ScanFreqConstants.PORT,0 );
+		Thread.sleep( 2000 );
 		ScanMessageCreator.scanUmtsFreq( ScanFreqConstants.IP,ScanFreqConstants.PORT,0 );
 		//ScanMessageCreator.scanGsmFreq( ScanFreqConstants.IP,ScanFreqConstants.PORT,0 );
 		//IpcellServiceManager.addCallBack( String.valueOf( IpcellConstants.IPCELL_QUERY_ACK ),new BaseHandler() );
