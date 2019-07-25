@@ -3,12 +3,7 @@ package com.doit.net.scan.udp.server;
 import com.doit.net.scan.udp.base.SerialMessage;
 import com.doit.net.scan.udp.constants.ScanFreqConstants;
 import com.doit.net.scan.udp.message.ScanMessageCreator;
-import com.doit.net.scan.udp.server.ScanServerManager;
 import com.doit.net.scan.udp.utils.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.slf4j.impl.SimpleLogger;
-import sun.security.pkcs11.wrapper.Constants;
 
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -21,7 +16,6 @@ import java.util.concurrent.LinkedBlockingQueue;
  * 发送线程
  */
 public class ScanSenderThread extends Thread {
-	private final static Logger log = LoggerFactory.getLogger( ScanSenderThread.class);
 
 	private static BlockingQueue<SerialMessage> senderQueue = new LinkedBlockingQueue<SerialMessage>();
 
@@ -35,7 +29,6 @@ public class ScanSenderThread extends Thread {
 	}
 
 	private void init() {
-		log.info( "Scan udp sender thread started " );
 		while (true)
 		{
 			try
@@ -56,8 +49,6 @@ public class ScanSenderThread extends Thread {
 						msg.setSend( false );
 						continue;
 					}
-					log.info("Serial wait msg:{}", msg.getMsg());
-					log.info("SendMessageList 长度:{}", ScanServerManager.SendMessageList.size());
 					msg.waitTimes++;
 					continue;
 				}
@@ -86,7 +77,6 @@ public class ScanSenderThread extends Thread {
 		msg.setSend( true );
 		msg.setWaitTimes( 0 );
 
-		log.info("Send {} to {}", msg.getMsg(), msg.getInetSocketAddress());
 		send(msg);
 	}
 
@@ -96,15 +86,13 @@ public class ScanSenderThread extends Thread {
 	 * @param msg
 	 */
 	private void send(SerialMessage msg) {
-		log.info( "scan udp sender thread started " );
 		try {
 			SocketAddress socketAddress = msg.getSocketAddress();
 			byte[] bytes =msg.getMsg().getBytes();
-			log.info( "send msg:{}",msg.getMsg() );
 			DatagramPacket packet = new DatagramPacket( bytes, bytes.length, socketAddress );
 			DatagramSocket socket = getSocket();
 			if(socket==null){
-				log.warn( "Not found scan socket:{}",msg.getInetSocketAddress().getPort() );
+				System.out.println("not found socket");
 			}
 			socket.send( packet );
 		}catch (Exception e){
@@ -136,7 +124,6 @@ public class ScanSenderThread extends Thread {
 
 	public static void put(SerialMessage message){
 		try {
-			log.info( "添加消息 code:{}到发送队列",message.getHead() );
 			senderQueue.put( message );
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -144,9 +131,9 @@ public class ScanSenderThread extends Thread {
 	}
 
 	public static void main(String[] args) throws InterruptedException {
-		System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "trace");
+		/*System.setProperty(SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "trace");
 		System.setProperty(SimpleLogger.SHOW_SHORT_LOG_NAME_KEY, "true");
-		System.setProperty(SimpleLogger.LOG_FILE_KEY, "System.out");
+		System.setProperty(SimpleLogger.LOG_FILE_KEY, "System.out");*/
 		ScanServerManager.startListener();
 		ScanMessageCreator.scanGsmFreq( ScanFreqConstants.IP,ScanFreqConstants.PORT,0 );
 		Thread.sleep( 2000 );

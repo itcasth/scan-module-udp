@@ -98,4 +98,20 @@ public class RemMacroItem {
 	public void setHead(String head) {
 		this.head = head;
 	}
+
+	@Override
+	public String toString() {
+		return "RemMacroItem{" +
+				"head='" + head + '\'' +
+				", plmn='" + plmn + '\'' +
+				", fcn='" + fcn + '\'' +
+				", pci='" + pci + '\'' +
+				", ci='" + ci + '\'' +
+				", rac='" + rac + '\'' +
+				", lac='" + lac + '\'' +
+				", rscp='" + rscp + '\'' +
+				", rxLevl='" + rxLevl + '\'' +
+				", list=" + list +
+				'}';
+	}
 }

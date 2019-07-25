@@ -1,8 +1,6 @@
 package com.doit.net.scan.udp.server;
 
 import com.doit.net.scan.udp.base.SerialMessage;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.net.*;
@@ -14,7 +12,6 @@ import java.util.List;
  * 服务管理器
  */
 public class ScanServerManager {
-	private final static Logger log = LoggerFactory.getLogger( ScanServerManager.class);
 
 	private static DatagramSocket datagramSocket;
 	public static List<SerialMessage> SendMessageList = new ArrayList<SerialMessage>();
@@ -34,9 +31,9 @@ public class ScanServerManager {
 			new ScanReceiverThread().start();
 			new ScanWorkThread().start();
 			new ScanSenderThread().start();
-			log.info( "【IPCELL-Server】 started on port:{}",PORT );
+			System.out.println( "【IPCELL-Server】 started on port:"+PORT );
 		}catch (Exception e){
-			log.error( "【IPCELL-Server】 启动异常，端口:{},异常原因：",port,e.getMessage() );
+			System.out.println("【IPCELL-Server】 启动异常,异常原因："+e.getMessage() );
 		}
 	}
 
@@ -106,7 +103,6 @@ public class ScanServerManager {
 		SerialMessage msg = SendMessageList.get( 0 );
 		if (reg.contains(msg.getReg()))
 		{
-			log.info( "检查消息 包含："+msg.getReg() );
 			SendMessageList.remove(0);
 		}
 	}

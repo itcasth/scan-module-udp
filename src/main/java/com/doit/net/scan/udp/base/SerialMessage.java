@@ -1,13 +1,8 @@
 package com.doit.net.scan.udp.base;
 
 import com.doit.net.scan.udp.constants.ScanFreqConstants;
-import com.doit.net.scan.udp.server.ScanServerManager;
 import com.doit.net.scan.udp.server.ScanWorkThread;
 import com.doit.net.scan.udp.utils.StringUtils;
-import io.netty.handler.codec.json.JsonObjectDecoder;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import sun.rmi.runtime.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +12,6 @@ import java.util.List;
  * 串口消息
  */
 public class SerialMessage extends BaseHeader{
-	private final static Logger log = LoggerFactory.getLogger( SerialMessage.class);
 	private String msg;
 	private String reg;
 	public 	int waitTimes;
@@ -85,7 +79,6 @@ public class SerialMessage extends BaseHeader{
 	 */
 	public synchronized static void  decodeByte(byte[] data) {
 		String content = new String( data );
-		log.info( "==================接收的数据：{}", content );
 		if (content.startsWith( ScanFreqConstants.PRE_EEMGINFO )) {
 			String[] arr = content.split( "\r\n" );
 			for (String str : arr) {
@@ -185,6 +178,8 @@ public class SerialMessage extends BaseHeader{
 			item.setList( list );
 			ScanWorkThread.push( item );
 			System.out.println(msg2+item.getList().size());
+			System.out.println("==================item====="+item);
+			System.out.println("==================List====="+item.getList());
 			dataStr = "";
 			list.clear();
 			item = null;
@@ -199,7 +194,6 @@ public class SerialMessage extends BaseHeader{
 	 */
 	public void decodeRemMacroItem(byte[] data) {
 		String content = new String( data );
-		log.info("==================接收的数据：{}",content);
 		if(content.startsWith( ScanFreqConstants.PRE_EEMGINFO)){
 			String[] arr = content.split( "\r\n" );
 			for (String str : arr){
@@ -279,7 +273,6 @@ public class SerialMessage extends BaseHeader{
 		}
 		String arfcn = val[8].trim();
 		String psc = val[9].trim();
-		log.info("rxLevel:{},lac:{},ci:{},arfcn:{},psc:{}", rxLevel, lac, ci, arfcn,psc);
 		if(item==null){
 			item = new RemMacroItem();
 			item.setHead( ScanFreqConstants.UMTS_SCAN_RESULT );
@@ -291,7 +284,11 @@ public class SerialMessage extends BaseHeader{
 		ritem.setLac( lac );
 		ritem.setRxLevel( rxLevel );
 		ritem.setPlmn( plmn );
-		list.add( ritem );
+		if(!"0".equals( ritem.getPlmn() )){
+			list.add( ritem );
+		}
+
+
 
 	}
 
@@ -325,7 +322,6 @@ public class SerialMessage extends BaseHeader{
 		{
 			psc = psc.trim();
 		}
-		log.info("rxLevel:{},lac:{},ci:{},arfcn:{},psc:{}", rxLevel,lac,ci,arfcn,psc);
 		if(item==null){
 			item = new RemMacroItem();
 			item.setHead( ScanFreqConstants.UMTS_SCAN_RESULT );
@@ -351,7 +347,6 @@ public class SerialMessage extends BaseHeader{
 		String[] val = l.replace("+EEMLTEINTER:", "").split(",");
 		String pci = val[1].trim();
 		String fcn = val[2].trim();
-		log.info("neighbour PCI:{},FCN:{}", pci, fcn);
 		RemMacroItem item = new RemMacroItem();
 		item.setHead( head );
 		RemNeighbourItem ritem = new RemNeighbourItem();
@@ -373,7 +368,6 @@ public class SerialMessage extends BaseHeader{
 		String[] val = l.replace("+EEMLTEINTER:", "").split(",");
 		String pci = val[1].trim();
 		String fcn = val[2].trim();
-		log.info("neighbour PCI:{},FCN:{}",pci,fcn);
 		RemMacroItem item = new RemMacroItem();
 		item.setHead( head );
 		RemNeighbourItem ritem = new RemNeighbourItem();
@@ -410,7 +404,6 @@ public class SerialMessage extends BaseHeader{
 		ritem.setCi( ci );
 		ritem.setRxLevel( rx_lev );
 		ritem.setFcn( fcn );
-		log.info("EEMGINFONC - rxLevel:{},lac:{},ci:{},arfcn:{},plmn:{}", rx_lev,tac,ci,fcn, mcc + mnc );
 		if(item==null){
 			item =  new RemMacroItem();
 			item.setHead( ScanFreqConstants.GSM_SCAN_RESULT );
@@ -441,7 +434,6 @@ public class SerialMessage extends BaseHeader{
 		String rx_lev = Integer.toHexString( Integer.parseInt( val[5].trim() ) );
 		String dlEuarfcn = val[15].trim();
 
-		log.info("EEMGINBFTM - SVC MCC:{},MNC:{},TAC:{},dl fcn:{},ci:{}", mcc, mnc, tac, dlEuarfcn, ci);
 		RemNeighbourItem ritem = new RemNeighbourItem();
 		ritem.setFcn( dlEuarfcn );
 		ritem.setCi( ci );
@@ -474,13 +466,16 @@ public class SerialMessage extends BaseHeader{
 		String ci = Integer.toHexString( Integer.parseInt( val[3].trim() ) );
 		String dlEuarfcn = val[4].trim();
 
-		log.info("SVC MCC:{},MNC:{},TAC:{},dl fcn:{},ci:{}", mcc, mnc, tac, dlEuarfcn, ci);
 		item = new RemMacroItem();
 		item.setPlmn( mcc + mnc );
 		item.setFcn( dlEuarfcn );
 		item.setCi( val[3].trim() );
 		item.setLac( val[2].trim() );
 		item.setHead( ScanFreqConstants.GSM_SCAN_RESULT );
+		if("0".equals( item.getPlmn() )){
+			item = null;
+		}
+
 	}
 
 	/**
@@ -514,8 +509,6 @@ public class SerialMessage extends BaseHeader{
 		rac = val[10].trim();
 		rxLevel = val[8].trim();
 		rscp = val[4].trim(); //-36
-		log.info("===========Engineering Mode=============");
-		log.info("SVC plmn{},rxLevel{},ci:{},arfcn:{},rac:{},psc:{},rscp", (mcc + mnc),  rxLevel,  ci,  arfcn, rac, psc,rscp);
 		item = new RemMacroItem();
 		item.setPlmn( mcc + mnc );
 		item.setPci(psc);
@@ -526,6 +519,9 @@ public class SerialMessage extends BaseHeader{
 		item.setRxLevl( rxLevel );
 		item.setRscp( rscp );
 		item.setHead( ScanFreqConstants.UMTS_SCAN_RESULT );
+		if("0".equals( item.getPlmn() )){
+			item = null;
+		}
 
 	}
 
@@ -550,8 +546,6 @@ public class SerialMessage extends BaseHeader{
 		String ci = Integer.toHexString( Integer.parseInt( val[9].trim() ) );
 		String rsrp = Integer.toHexString( Integer.parseInt( val[10].trim() ) );
 		String rsrq = Integer.toHexString( Integer.parseInt( val[11].trim() ) );
-		log.info("===========Debug Mode=============");
-		log.info("SVC MCC:{},MNC:{},TAC:{},PCI:{},dl fcn:{},ul fcn:{},band:{},band width:{},ci:{},rsrp:{},rsrq:{}", mcc, mnc, tac, pci, dlEuarfcn, ulEuarfcn, band, dlbandWidth, ci, rsrp, rsrq);
 		RemMacroItem item = new RemMacroItem();
 		item.setPlmn(  mcc + mnc );
 		item.setPci( pci );
