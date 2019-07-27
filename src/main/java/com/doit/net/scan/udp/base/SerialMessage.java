@@ -97,12 +97,17 @@ public class SerialMessage extends BaseHeader{
 				}
 			}
 		} else if (content.startsWith( ScanFreqConstants.POST_EEMGINFONC )) {
-			dataStr = content;
+			String[] arr = content.split( "\r\n" );
+			//GSM邻区信息解码
+			for (String str : arr) {
+				if (str.startsWith( ScanFreqConstants.POST_EEMGINFONC )) {
+					pushInfocToWorkThread( str, ScanFreqConstants.POST_EEMGINFONC );
+				}
+			}
+			ReportResult( "【======GSM扫频结果上报======】", "【======GSM邻区长度======】" );
 
 		} else if (content.contains( ScanFreqConstants.POST_EEMGINFONC )) {
-			dataStr = dataStr + content;
-			System.out.println( "合并后的数据：" + dataStr );
-			String[] arr = dataStr.split( "\r\n" );
+			String[] arr = content.split( "\r\n" );
 			//GSM邻区信息解码
 			for (String str : arr) {
 				if (str.startsWith( ScanFreqConstants.POST_EEMGINFONC )) {
@@ -389,6 +394,9 @@ public class SerialMessage extends BaseHeader{
 		System.out.println("===pushInfocToWorkThread===");
 		//+EEMGINFONC:\ 1,\ 0,\ 0,\ 0,\ 0,\ 0,20,\ 255,\ 0,\ 0,\ 99,\ 0,\ 0\r\n\r\n\
 		String[] val = l.replace("+EEMGINFONC:", "").split(",");
+		if(l.length()<10){
+			return;
+		}
 		RemNeighbourItem ritem = new RemNeighbourItem();
 		String mcc = Integer.toHexString( Integer.parseInt( val[1].trim() ) );
 		String ss = val[2];
@@ -424,6 +432,9 @@ public class SerialMessage extends BaseHeader{
 	 */
 	private static void pushinBfTmToWorkThread(String l, String head) {
 		System.out.println("===pushinBfTmToWorkThread===");
+		if(l.length()<15){
+			return;
+		}
 		//+EEMGINBFTM:\ 1,\ 1120,\ 1,\ 4188,\ 52884,\ 0,\ 17,\ 7,\ 0,\ 0,\ 37,\ 0,\ 0,0,\ 0,\ 0,\ 0,\ 0,\ 0\r\n
 		String[] val = l.replace("+EEMGINBFTM:", "").split(",");
 		String mcc =  Integer.toHexString( Integer.parseInt( val[1].trim() ) );
