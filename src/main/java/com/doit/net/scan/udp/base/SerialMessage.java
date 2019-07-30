@@ -195,7 +195,7 @@ public class SerialMessage extends BaseHeader{
 				}
 			}
 			dataStr = "";
-			list.clear();
+			//list.clear();
 			item = null;
 		}
 	}
