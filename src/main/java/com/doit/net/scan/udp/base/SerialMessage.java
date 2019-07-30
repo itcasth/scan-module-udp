@@ -72,7 +72,8 @@ public class SerialMessage extends BaseHeader{
 
 	private static String dataStr = "";
 	private static RemMacroItem item = null;
-	private static List<RemNeighbourItem> list = new ArrayList(  );
+	private static List<RemNeighbourItem> gsmList = new ArrayList(  );
+	private static List<RemNeighbourItem> wcdmaList = new ArrayList(  );
 	/**
 	 * 码流解码
 	 * @param data
@@ -184,7 +185,11 @@ public class SerialMessage extends BaseHeader{
 		//将扫频结果添加到工作线程
 		if(item!=null && StringUtils.isNotBlank( item.getHead() )){
 			System.out.println(msg);
-			item.setList( list );
+			if(ScanFreqConstants.GSM_SCAN_RESULT.equals( item.getHead() )){
+				item.setList( gsmList );
+			}else {
+				item.setList( wcdmaList );
+			}
 			ScanWorkThread.push( item );
 			System.out.println(msg2+item.getList().size());
 			System.out.println("==================item====="+item);
@@ -298,7 +303,7 @@ public class SerialMessage extends BaseHeader{
 		ritem.setLac( lac );
 		ritem.setRxLevel( rxLevel );
 		ritem.setPlmn( plmn );
-		list.add( ritem );
+		wcdmaList.add( ritem );
 
 
 
@@ -346,7 +351,7 @@ public class SerialMessage extends BaseHeader{
 		ritem.setLac( lac );
 		ritem.setRxLevel( rxLevel );
 
-		list.add( ritem );
+		wcdmaList.add( ritem );
 
 		System.out.println("===pushUmtsInterToWorkThread===");
 	}
@@ -425,7 +430,7 @@ public class SerialMessage extends BaseHeader{
 			item.setHead( ScanFreqConstants.GSM_SCAN_RESULT );
 		}
 		if(!ritem.getPlmn().startsWith( "0" )){
-			list.add( ritem );
+			gsmList.add( ritem );
 		}
 
 
@@ -464,7 +469,7 @@ public class SerialMessage extends BaseHeader{
 			item.setHead( ScanFreqConstants.GSM_SCAN_RESULT );
 		}
 		if(!ritem.getPlmn().startsWith( "0" )){
-			list.add( ritem );
+			gsmList.add( ritem );
 		}
 
 	}
