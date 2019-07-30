@@ -78,6 +78,11 @@ public class ScanSenderThread extends Thread {
 		msg.setWaitTimes( 0 );
 
 		send(msg);
+		try {
+			Thread.sleep( 3000 );
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 	}
 
 
@@ -135,8 +140,8 @@ public class ScanSenderThread extends Thread {
 		System.setProperty(SimpleLogger.SHOW_SHORT_LOG_NAME_KEY, "true");
 		System.setProperty(SimpleLogger.LOG_FILE_KEY, "System.out");*/
 		ScanServerManager.startListener();
-		ScanMessageCreator.scanGsmFreq( ScanFreqConstants.IP,ScanFreqConstants.PORT,0 );
-		Thread.sleep( 2000 );
+		ScanMessageCreator.scanGsmFreq( ScanFreqConstants.IP,ScanFreqConstants.PORT,1 );
+		Thread.sleep( 4000 );
 		ScanMessageCreator.scanUmtsFreq( ScanFreqConstants.IP,ScanFreqConstants.PORT,0 );
 		//ScanMessageCreator.scanGsmFreq( ScanFreqConstants.IP,ScanFreqConstants.PORT,0 );
 		//IpcellServiceManager.addCallBack( String.valueOf( IpcellConstants.IPCELL_QUERY_ACK ),new BaseHandler() );

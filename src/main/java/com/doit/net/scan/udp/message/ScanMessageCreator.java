@@ -132,7 +132,7 @@ public class ScanMessageCreator {
 	}
 
 	/**
-	 * GSM扫频
+	 * UMTS扫频
 	 * @param ip
 	 * @param port
 	 * @param operator  0 不指定  1 移动  2联通  3电信
@@ -149,7 +149,7 @@ public class ScanMessageCreator {
 	}
 
 	/**
-	 * UMTS扫频
+	 * GSM扫频
 	 * @param ip
 	 * @param port
 	 * @param operator  0 不指定  1 移动  2联通  3电信

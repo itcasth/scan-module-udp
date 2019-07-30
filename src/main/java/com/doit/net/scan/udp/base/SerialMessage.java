@@ -94,6 +94,10 @@ public class SerialMessage extends BaseHeader{
 					}
 					pushUmtsToWorkThread( val, ScanFreqConstants.POST_EEMUMTSSVC );
 					ReportResult( "【======WCDMA扫频结果上报======】", "【======WCDMA邻区长度======】" );
+				}else if(str.startsWith( ScanFreqConstants.POST_EEMGINFONC )){
+					//GSM邻区
+					pushInfocToWorkThread( str, ScanFreqConstants.POST_EEMGINFONC );
+					ReportResult( "【======GSM扫频结果上报======】", "【======GSM邻区长度======】" );
 				}
 			}
 		} else if (content.startsWith( ScanFreqConstants.POST_EEMGINFONC )) {
@@ -185,6 +189,11 @@ public class SerialMessage extends BaseHeader{
 			System.out.println(msg2+item.getList().size());
 			System.out.println("==================item====="+item);
 			System.out.println("==================List====="+item.getList());
+			if(item.getList().size()>0){
+				for (RemNeighbourItem it : item.getList()){
+					System.out.println(msg+"==============fcn:"+it.getFcn()+",plmn:"+it.getPlmn()+",rxLevel:"+it.getRxLevel()+",psc:"+it.getPci());
+				}
+			}
 			dataStr = "";
 			list.clear();
 			item = null;
@@ -289,9 +298,8 @@ public class SerialMessage extends BaseHeader{
 		ritem.setLac( lac );
 		ritem.setRxLevel( rxLevel );
 		ritem.setPlmn( plmn );
-		if(!"0".equals( ritem.getPlmn() )){
-			list.add( ritem );
-		}
+		list.add( ritem );
+
 
 
 
@@ -404,13 +412,13 @@ public class SerialMessage extends BaseHeader{
 		String mnc = _mnc.length() == 2 ? _mnc : "0" + _mnc;
 		String tac = val[3].trim();
 		String ci = val[5].trim();
-		String rx_lev = Integer.toHexString( Integer.parseInt( val[6].trim() ) );
+		//String rx_lev = Integer.toHexString( Integer.parseInt( val[6].trim() ) );
 		String fcn = val[10].trim();
 		String fcn2= Integer.toHexString( Integer.parseInt( val[10].trim() ) );
 		ritem.setPlmn( mcc + mnc );
 		ritem.setLac( tac );
 		ritem.setCi( ci );
-		ritem.setRxLevel( rx_lev );
+		ritem.setRxLevel( val[6].trim() );
 		ritem.setFcn( fcn );
 		if(item==null){
 			item =  new RemMacroItem();
@@ -470,12 +478,15 @@ public class SerialMessage extends BaseHeader{
 		System.out.println("===pushInfoSvcToWorkThread===");
 		//+EEMGINFOSVC:\ 1120,\ 1,\ 55064,\ 8,\ 0,\ 0,\ 25,\ 38,\ 58,\ 0,\ 0,\ \ 38,\ 0,\ 0,\ 0,\ 0,\ \ 0,\ 0,\ 0,\ 0,\ 0,\ 0,\ 100,\ \ 2,\ 100,\ 36,\ 6,\ 54,\ 0,\ 0,\ \ 0,\ 0,\ 0,\ 0,\ 0,\ 0\r\n\r\n\
 		String[] val = l.replace("+EEMGINFOSVC:", "").split(",");
+		if(val.length<21){
+			return;
+		}
 		String mcc =  Integer.toHexString( Integer.parseInt( val[0].trim() ) );
 		String _mnc = Integer.toHexString( Integer.parseInt( val[1].trim() ) );
 		String mnc = _mnc.length() == 2 ? _mnc : "0" + _mnc;
-		String tac = Integer.toHexString( Integer.parseInt( val[2].trim() ) );
-		String ci = Integer.toHexString( Integer.parseInt( val[3].trim() ) );
-		String dlEuarfcn = val[4].trim();
+		//String tac = Integer.toHexString( Integer.parseInt( val[2].trim() ) );
+		//String ci = Integer.toHexString( Integer.parseInt( val[3].trim() ) );
+		String dlEuarfcn = val[22].trim();
 
 		item = new RemMacroItem();
 		item.setPlmn( mcc + mnc );
@@ -530,9 +541,6 @@ public class SerialMessage extends BaseHeader{
 		item.setRxLevl( rxLevel );
 		item.setRscp( rscp );
 		item.setHead( ScanFreqConstants.UMTS_SCAN_RESULT );
-		if("0".equals( item.getPlmn() )){
-			item = null;
-		}
 
 	}
 
