@@ -499,6 +499,7 @@ public class SerialMessage extends BaseHeader{
 		item.setCi( val[3].trim() );
 		item.setLac( val[2].trim() );
 		item.setHead( ScanFreqConstants.GSM_SCAN_RESULT );
+		item.setSvc( true );
 		if("0".equals( item.getPlmn() )){
 			item = null;
 		}

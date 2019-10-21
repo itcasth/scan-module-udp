@@ -16,6 +16,16 @@ public class RemMacroItem {
 	private String rscp;
 	private String rxLevl;
 
+	private boolean svc;//邻区
+
+	public boolean isSvc() {
+		return svc;
+	}
+
+	public void setSvc(boolean svc) {
+		this.svc = svc;
+	}
+
 	public String getRxLevl() {
 		return rxLevl;
 	}
